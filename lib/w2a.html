@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+</head>
+<body>
+<h1>Samji test</h1>
+<button class="button" onclick="web2app.scanQrCode(contactCallback);">Scan QR Code</button>
+<button class="button" onclick="web2app.takePicture(contactCallback);">Take Picture</button>
+<button class="button" onclick="web2app.appReview(myCallback);">Request App Review</button>
+<button class="button" onclick="web2app.geoLocation(contactCallback);">Request Current Location</button>
+<button class="button" onclick="web2app.geoAddress(contactCallback);">Request Current Address</button>
+<button class="button" onclick="web2app.vibrate(1000);">Start Vibration</button>
+<button class="button" onclick="web2app.deviceInfo(contactCallback);">Device Info</button>
+<button class="button" onclick="web2app.biometric.check(myCallback);">Check Biometric</button>
+<button class="button" onclick="web2app.biometric.saveauth({'token':'samji'});">Save Biometric</button>
+<button class="button" onclick="web2app.biometric.start(contactCallback);">Login With FingerPrint</button>
+<button class="button" onclick="web2app.appSettings();">App Settings</button>
+<button class="button" onclick="web2app.share('https://web2app.com');">Share</button>
+<button class="button" onclick="web2app.wakelock.start();">Wakelock Start</button>
+<button class="button" onclick="web2app.wakelock.stop();">Wakelock Stop</button>
+<button class="button" onclick="web2app.selectContact(contactCallback);">Select Contact</button>
+
+<input type="text" id="anyme" name="anyme"/>
+<script>
+
+        function web2appInit(data) {
+            console.log("web2app is ready")
+            console.log(JSON.stringify(data));
+         }
+
+        function myCallback(data) {
+            console.log("I am in callback")
+            console.log(JSON.stringify(data));
+         }
+
+        function contactCallback(data) {
+            console.log("I am in callback")
+            console.log(JSON.stringify(data));
+            document.getElementById('anyme').value=data.data;
+         }
+
+        </script>
+</body>
+</html>
