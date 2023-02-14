@@ -1,29 +1,29 @@
-import 'package:desktop_webview_window/desktop_webview_window.dart';
+import 'dart:io';
+
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:universal_platform/universal_platform.dart';
+import 'package:savebills/provider/adsProvider.dart';
 
-import 'advertgogle.dart';
 import 'constant.dart';
+import 'landingpage.dart';
 import 'splashscreen.dart';
 import 'package:flutter/material.dart';
 
-import 'windowcontroller.dart';
+
+final InAppLocalhostServer localhostServer = InAppLocalhostServer();
 
 Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();
-  if(UniversalPlatform.isIOS||UniversalPlatform.isAndroid) {
-    initiate(const MyApp());
-  }else{
-    if (runWebViewTitleBarWidget(args)) {
-      return;
-    }
-    // if (UniversalPlatform.isWindows) {
-    //   final windowcontroller = Get.put(Windowcontroller());
-    // }
-  runApp(const MyApp());
+  // start the localhost server
+  await localhostServer.start();
+
+  if (Platform.isAndroid) {
+    await InAppWebViewController.setWebContentsDebuggingEnabled(true);
   }
+
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -47,7 +47,12 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.deepPurple,
       ),
       debugShowCheckedModeBanner: false,
-      home: const Splashscreen(),
+      home: Landingpage(),
+      initialBinding: BindingsBuilder(() {
+        Get.lazyPut(() => AdsProvider(), fenix: true);
+        // Get.lazyPut(() => ApiProvider(), fenix: true);
+        // Get.find<VpnProvider>().initialize();
+      }),
     );
   }
 }

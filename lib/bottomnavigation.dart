@@ -41,15 +41,15 @@ class Bottomnavigation extends StatelessWidget {
               ),
             ),
             onTap: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => WebViewContainer(bottomurl[i])));
+              // url = bottomurl[i];
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => WebViewContainer()));
             },
           )
       ],
     );
   }
+
   getIcon(icon) {
     switch (icon) {
       case "Icons.add_shopping_cart":

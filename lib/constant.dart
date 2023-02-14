@@ -12,7 +12,6 @@ List bottomurl = [
 String appName = "Savebills";
 String userAgent = "savebills";
 bool enableAdvt = false;
-bool tabNavigationEnabled = false;
 bool? webviewAvailable;
 Color primarycolor = Color(0xff009dc4);
 

@@ -13,7 +13,7 @@ class No_Internet extends StatelessWidget {
       onWillPop: () async {
         Navigator.push(context,
             MaterialPageRoute(
-                builder: (context) => WebViewContainer(lasturl.toString())));
+                builder: (context) => WebViewContainer()));
     return true;
     },
       child: Scaffold(

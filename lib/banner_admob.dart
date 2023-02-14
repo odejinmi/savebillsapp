@@ -1,7 +1,11 @@
-import 'package:flutter/cupertino.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'dart:io';
 
-import 'advertgogle.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:get/get.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:savebills/provider/googleProvider.dart';
+
+
 
 class BannerAdmob extends StatefulWidget {
   @override
@@ -18,7 +22,12 @@ class _BannerAdmobState extends State<BannerAdmob> {
   void initState() {
     super.initState();
     _bannerAd = BannerAd(
-      adUnitId: Advertgoogle.bannerUnitId,
+      adUnitId: Platform.isAndroid
+      // test
+      // ? 'ca-app-pub-3940256099942544/6300978111'
+      ? 'ca-app-pub-1598206053668309/7104910929'
+      // : 'ca-app-pub-3940256099942544/2934735716';
+      : 'ca-app-pub-1598206053668309/3771336427',
       request: const AdRequest(),
       size: AdSize.largeBanner,
       listener: BannerAdListener(

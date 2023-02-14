@@ -5,10 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:savebills/pagecontroller.dart';
+import 'package:savebills/provider/adsProvider.dart';
+import 'package:savebills/provider/googleProvider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:app_settings/app_settings.dart';
-import 'package:wakelock/wakelock.dart';
 // import 'package:contacts_service/contacts_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
@@ -18,7 +21,6 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:vibration/vibration.dart';
 
-import 'advertgogle.dart';
 import 'constant.dart';
 import 'deviceinfo.dart';
 import 'package:local_auth/local_auth.dart';
@@ -238,8 +240,6 @@ Future<void> startJS(webViewController) async {
   webViewController?.addJavaScriptHandler(
       handlerName: 'selectContact',
       callback: (args) async {
-        print("start select contacts");
-        print(args);
 
         PermissionStatus permission = await Permission.contacts.status;
         if (permission != PermissionStatus.granted &&
@@ -302,8 +302,8 @@ Future<void> startJS(webViewController) async {
   webViewController?.addJavaScriptHandler(
       handlerName: 'appSettings',
       callback: (args) {
-        print("start appSettings");
-        print(args);
+        showmessage("start appSettings");
+        showmessage(args);
 
         AppSettings.openAppSettings();
 
@@ -311,27 +311,8 @@ Future<void> startJS(webViewController) async {
       });
 
   webViewController?.addJavaScriptHandler(
-      handlerName: 'wakelock_start',
-      callback: (args) {
-        print("start wakelock_start");
-        Wakelock.enable();
-        return {"success": true};
-      });
-
-  webViewController?.addJavaScriptHandler(
-      handlerName: 'wakelock_stop',
-      callback: (args) {
-        print("start wakelock_stop");
-        Wakelock.disable();
-        return {"success": true};
-      });
-
-  webViewController?.addJavaScriptHandler(
       handlerName: 'deviceInfo',
       callback: (args) async {
-        print("start deviceInfo");
-        print(args);
-
         var resp = await initPlatformState();
         print(resp);
         return {"success": true, "data": resp};
@@ -340,8 +321,8 @@ Future<void> startJS(webViewController) async {
   webViewController?.addJavaScriptHandler(
       handlerName: 'share',
       callback: (args) {
-        print("start sharing");
-        print(args);
+        showmessage("start sharing");
+        showmessage(args);
 
         Share.share(args[0], subject: 'Web2App');
 
@@ -351,17 +332,12 @@ Future<void> startJS(webViewController) async {
   webViewController?.addJavaScriptHandler(
       handlerName: 'biometric',
       callback: (args) {
-        print("start biometric");
-        print(args);
-
         return _authenticateWithBiometrics(prefs);
       });
 
   webViewController?.addJavaScriptHandler(
       handlerName: 'biometric_stop',
       callback: (args) {
-        print("start biometric stop");
-        print(args);
         _cancelAuthentication();
         return {"success": true, "message": "Authentication cancelled"};
       });
@@ -369,8 +345,6 @@ Future<void> startJS(webViewController) async {
   webViewController?.addJavaScriptHandler(
       handlerName: 'biometric_available',
       callback: (args) {
-        print("start biometric_available");
-        print(args);
         _getAvailableBiometrics();
         return {
           "success": true,
@@ -382,8 +356,6 @@ Future<void> startJS(webViewController) async {
   webViewController?.addJavaScriptHandler(
       handlerName: 'biometric_check',
       callback: (args) async {
-        print("start biometric_check");
-        print(args);
         var auth = prefs.read("auth");
         bool cb = await _checkBiometrics();
         bool aut = auth != null ? true : false;
@@ -396,9 +368,6 @@ Future<void> startJS(webViewController) async {
   webViewController?.addJavaScriptHandler(
       handlerName: 'biometric_saveauth',
       callback: (args) async {
-        print("start biometric_saveauth");
-        print(args);
-        print(jsonEncode(args[0]));
         await prefs.write("auth", jsonEncode(args[0]));
         return {"success": true, "message": "Auth saved"};
       });
@@ -406,8 +375,8 @@ Future<void> startJS(webViewController) async {
   webViewController?.addJavaScriptHandler(
       handlerName: 'scanQrCode',
       callback: (args) async {
-        print("start scanQrCode");
-        print(args);
+        showmessage("start scanQrCode");
+        showmessage(args);
 
         PermissionStatus permission = await Permission.camera.status;
         if (permission != PermissionStatus.granted &&
@@ -438,8 +407,8 @@ Future<void> startJS(webViewController) async {
   webViewController?.addJavaScriptHandler(
       handlerName: 'takePicture',
       callback: (args) async {
-        print("start takePicture");
-        print(args);
+        showmessage("start takePicture");
+        showmessage(args);
 
         PermissionStatus permission = await Permission.camera.status;
         if (permission != PermissionStatus.granted &&
@@ -470,8 +439,8 @@ Future<void> startJS(webViewController) async {
   webViewController?.addJavaScriptHandler(
       handlerName: 'appReview',
       callback: (args) async {
-        print("start appReview");
-        print(args);
+        showmessage("start appReview");
+        showmessage(args);
 
         _requestReview();
         return {"success": true, 'message': "App review requested"};
@@ -480,8 +449,8 @@ Future<void> startJS(webViewController) async {
   webViewController?.addJavaScriptHandler(
       handlerName: 'geoLocation',
       callback: (args) async {
-        print("start geoLocation");
-        print(args);
+        showmessage("start geoLocation");
+        showmessage(args);
 
         return _getCurrentPosition(1);
       });
@@ -489,8 +458,8 @@ Future<void> startJS(webViewController) async {
   webViewController?.addJavaScriptHandler(
       handlerName: 'geoAddress',
       callback: (args) async {
-        print("start geoLocation");
-        print(args);
+        showmessage("start geoLocation");
+        showmessage(args);
 
         return _getCurrentPosition(2);
       });
@@ -498,28 +467,27 @@ Future<void> startJS(webViewController) async {
   webViewController?.addJavaScriptHandler(
       handlerName: 'vibrate',
       callback: (args) async {
-        print("start vibrate");
-        print(args);
+        showmessage("start vibrate");
+        showmessage(args);
 
         Vibration.vibrate(duration: args[0]);
 
         return {"success": true, 'message': "Vibration started"};
       });
-
   webViewController?.addJavaScriptHandler(
       handlerName: 'islogin',
       callback: (args) async {
-        print("start vibrate");
-        print(args);
-        tabNavigationEnabled = true;
+        showmessage("app has login");
+        showmessage(args);
+        Get.find<Pagecontroller>().tabNavigationEnabled.value = true;
         return {"success": true, 'message': "Devise has login"};
       });
 
   webViewController?.addJavaScriptHandler(
       handlerName: 'showinterstitial',
       callback: (args) async {
-        print("start vibrate");
-        showgoogleadvert();
+        showmessage("advert is showing");
+        Get.find<AdsProvider>().showads();
         return {"success": true, 'message': "Devise has login"};
       });
 
@@ -530,6 +498,19 @@ Future<void> startJS(webViewController) async {
         return {"success": true, 'message': "Devise has copy"};
       });
 
+}
+
+showmessage(message){
+  Get.snackbar("Mega Cheap Data", message.toString(),
+      duration: const Duration(seconds: 4),
+// icon: Icon(Icons.person, color: Colors.white),
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.green,
+      mainButton: TextButton(
+          onPressed: () {
+            Get.back();
+          },
+          child: Text("CLOSE")));
 }
 
 enum _SupportState {

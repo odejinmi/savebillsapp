@@ -6,161 +6,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:get/get.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:savebills/pagecontroller.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'advertgogle.dart';
 import 'banner_admob.dart';
 import 'bottomnavigation.dart';
 import 'constant.dart';
 import 'js_handler.dart';
 import 'no_internet.dart';
+import 'provider/googleProvider.dart';
 
 class WebViewContainer extends StatefulWidget {
-  final url;
-  const WebViewContainer(this.url);
+  const WebViewContainer({Key? key}) : super(key: key);
   @override
-  createState() => WebViewContainerState(this.url);
+  createState() => WebViewContainerState();
 }
 
-class WebViewContainerState extends State<WebViewContainer>
-    with WidgetsBindingObserver {
-  var urll = "";
-  var webViewKey = GlobalKey();
-
-  InAppWebViewController? webViewController;
-  InAppWebViewGroupOptions options = InAppWebViewGroupOptions(
-      crossPlatform: InAppWebViewOptions(
-          useShouldOverrideUrlLoading: true,
-          mediaPlaybackRequiresUserGesture: false,
-          useOnDownloadStart: true),
-      android: AndroidInAppWebViewOptions(
-        useHybridComposition: true,
-      ),
-      ios: IOSInAppWebViewOptions(
-        allowsInlineMediaPlayback: true,
-      ));
-
-  late PullToRefreshController pullToRefreshController;
-  late ContextMenu contextMenu;
-  var progresss = 0.0;
-  var isLoading = true;
-  DateTime? currentBackPressTime;
-
-  Future<bool> onBackPressed() {
-    DateTime now = DateTime.now();
-    if (currentBackPressTime == null ||
-        now.difference(currentBackPressTime!) > const Duration(seconds: 2)) {
-      currentBackPressTime = now;
-      webViewController?.goBack();
-      return Future.value(false);
-    }
-    return Future.value(true);
-  }
-
-  var _url;
-  final _key = UniqueKey();
-  WebViewContainerState(this._url);
-
-  Future<bool> exitApp(BuildContext context) async {
-    if (await webViewController!.canGoBack()) {
-      print("on will goback");
-      webViewController!.goBack();
-      return Future.value(false);
-    } else {
-      print("No back history item");
-      return Future.value(true);
-    }
-  }
-
-  Future<void> hello() async {
-    // await readJson();
-    // setParams();
-  }
-
-  Future<void> flutterDownload() async {
-    // Plugin must be initialized before using
-    await FlutterDownloader.initialize(
-        debug:
-            false, // optional: set to false to disable printing logs to console (default: true)
-        ignoreSsl:
-            true // option: set to false to disable working with http links (default: false)
-        );
-  }
-
-  late Timer timer;
-  int selected = 0;
-  @override
-  void initState() {
-    // TODO: implement initState
-    flutterDownload();
-    // createRewardedAd();
-    createInterstitialAd();
-    // Future.delayed(const Duration(milliseconds: 2000), () {
-    //   setState(() {
-    //     showgoogleadvert();
-    //   });
-    // });
-
-      // timer = Timer.periodic(const Duration(seconds: 60), (Timer t) {
-      //   showgoogleadvert();
-      // });
-
-    hello();
-    for (int i = 0; i < bottomicon.length; i++) {
-      if (_url == bottomurl[i]) {
-        selected = i;
-      }
-    }
-    WidgetsBinding.instance.addObserver(this);
-    contextMenu = ContextMenu(
-        menuItems: [
-          ContextMenuItem(
-              androidId: 1,
-              iosId: "1",
-              title: "Special",
-              action: () async {
-                print("Menu item Special clicked!");
-                print(await webViewController?.getSelectedText());
-                await webViewController?.clearFocus();
-              })
-        ],
-        options: ContextMenuOptions(hideDefaultSystemContextMenuItems: false),
-        onCreateContextMenu: (hitTestResult) async {
-          print("onCreateContextMenu");
-          print(hitTestResult.extra);
-          print(await webViewController?.getSelectedText());
-        },
-        onHideContextMenu: () {
-          print("onHideContextMenu");
-        },
-        onContextMenuActionItemClicked: (contextMenuItemClicked) async {
-          var id = (Platform.isAndroid)
-              ? contextMenuItemClicked.androidId
-              : contextMenuItemClicked.iosId;
-          print("onContextMenuActionItemClicked: $id ${contextMenuItemClicked.title}");
-        });
-
-    pullToRefreshController = PullToRefreshController(
-      options: PullToRefreshOptions(
-        color: Colors.blue,
-      ),
-      onRefresh: () async {
-        if (Platform.isAndroid) {
-          webViewController?.reload();
-        } else if (Platform.isIOS) {
-          webViewController?.loadUrl(
-              urlRequest: URLRequest(url: await webViewController?.getUrl()));
-        }
-      },
-    );
-    super.initState();
-  }
+class WebViewContainerState extends State<WebViewContainer> {
+  var pagecontroller = Get.put(Pagecontroller());
 
   @override
   Widget build(BuildContext context) {
+    pagecontroller.start();
     var initialSettings = InAppWebViewSettings();
     initialSettings.useOnDownloadStart = true;
     initialSettings.useOnLoadResource = true;
@@ -184,9 +55,9 @@ class WebViewContainerState extends State<WebViewContainer>
     initialSettings.disableLongPressContextMenuOnLinks = true;
     // initialSettings.allowingReadAccessTo = WebUri('file://$WEB_ARCHIVE_DIR/');
     return WillPopScope(
-        onWillPop: () => exitApp(context),
-        child: Scaffold(
-          appBar: AppBar(toolbarHeight:0),
+        onWillPop: () => pagecontroller.exitApp(context),
+        child: Obx(()=>Scaffold(
+          appBar: AppBar(toolbarHeight: 0),
           body: LoaderOverlay(
             useDefaultLoading: false,
             overlayWidget: Center(
@@ -202,16 +73,18 @@ class WebViewContainerState extends State<WebViewContainer>
                 children: [
                   Expanded(
                     child: InAppWebView(
-                      key: webViewKey,
+                      key: pagecontroller.webViewKey,
                       initialSettings: initialSettings,
                       // contextMenu: contextMenu,
-                      initialUrlRequest: URLRequest(url: WebUri(_url)),
+                      initialUrlRequest:
+                          URLRequest(url: WebUri(pagecontroller.url.value)),
                       // initialFile: "assets/index.html",
                       initialUserScripts: UnmodifiableListView<UserScript>([]),
                       // initialOptions: options,
-                      pullToRefreshController: pullToRefreshController,
+                      pullToRefreshController:
+                          pagecontroller.pullToRefreshController,
                       onWebViewCreated: (controller) async {
-                        webViewController = controller;
+                        pagecontroller.webViewController = controller;
                       },
                       onDownloadStartRequest:
                           (controller, downloadStartRequest) async {
@@ -235,14 +108,15 @@ class WebViewContainerState extends State<WebViewContainer>
                             action: ServerTrustAuthResponseAction.PROCEED);
                       },
                       onLoadStart: (controller, url) async {
-                        urll = url.toString();
+                        pagecontroller.urll.value = url.toString();
                         context.loaderOverlay.show();
 
                         // inject javascript file from assets folder
-                        await webViewController?.injectJavascriptFileFromAsset(
-                            assetFilePath: "asset/js_bridge.js");
+                        await pagecontroller.webViewController
+                            ?.injectJavascriptFileFromAsset(
+                                assetFilePath: "asset/js_bridge.js");
 
-                        startJS(webViewController);
+                        startJS(pagecontroller.webViewController);
                       },
                       onPermissionRequest:
                           (controller, permissionRequest) async {
@@ -263,10 +137,10 @@ class WebViewContainerState extends State<WebViewContainer>
                           "javascript",
                           "about"
                         ].contains(uri.scheme)) {
-                          if (await canLaunch(urll)) {
+                          if (await canLaunch(pagecontroller.urll.value)) {
                             // Launch the App
                             await launch(
-                              urll,
+                              pagecontroller.urll.value,
                             );
                             // and cancel the request
                             return NavigationActionPolicy.CANCEL;
@@ -276,28 +150,29 @@ class WebViewContainerState extends State<WebViewContainer>
                         return NavigationActionPolicy.ALLOW;
                       },
                       onLoadStop: (controller, url) async {
-                        pullToRefreshController.endRefreshing();
+                        pagecontroller.pullToRefreshController.endRefreshing();
                         // context.loaderOverlay.hide();
-                        if (isLoading) {
+                        if (pagecontroller.isLoading.value) {
                           setState(() {
-                            isLoading = false;
+                            pagecontroller.isLoading.value = false;
+                            pagecontroller.isloaded.value = true;
                           });
                         }
-                        urll = url.toString();
+                        pagecontroller.urll.value = url.toString();
                       },
                       onReceivedError: (controller, request, error) async {
                         var isForMainFrame = request.isForMainFrame ?? false;
                         if (!isForMainFrame) {
                           return;
                         }
-                        pullToRefreshController.endRefreshing();
+                        pagecontroller.pullToRefreshController.endRefreshing();
                         Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (context) => No_Internet()));
                       },
                       onLoadError: (controller, url, code, message) {
-                        pullToRefreshController.endRefreshing();
+                        pagecontroller.pullToRefreshController.endRefreshing();
                         Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -305,16 +180,17 @@ class WebViewContainerState extends State<WebViewContainer>
                       },
                       onProgressChanged: (controller, progress) {
                         if (progress == 100) {
-                          pullToRefreshController.endRefreshing();
+                          pagecontroller.pullToRefreshController
+                              .endRefreshing();
                         }
                         if (progress >= 60) {
                           context.loaderOverlay.hide();
                         }
-                        progresss = progress / 100;
+                        pagecontroller.progresss = progress / 100;
                       },
                       onUpdateVisitedHistory:
                           (controller, url, androidIsReload) {
-                        urll = url.toString();
+                        pagecontroller.urll.value = url.toString();
                       },
                       onConsoleMessage: (controller, consoleMessage) {
                         print(consoleMessage);
@@ -326,11 +202,11 @@ class WebViewContainerState extends State<WebViewContainer>
               ),
             ),
           ),
-          bottomNavigationBar: !tabNavigationEnabled
-                  ? null
-                  : Bottomnavigation(
-                          selected: selected,
-                        ),
-        ));
+          bottomNavigationBar: !pagecontroller.tabNavigationEnabled.value
+              ? null
+              : Bottomnavigation(
+                  selected: pagecontroller.selected.value,
+                ),
+        )));
   }
 }
