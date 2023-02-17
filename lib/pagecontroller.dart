@@ -114,7 +114,8 @@ var tabNavigationEnabled = false.obs;
     return Future.value(true);
   }
 
-  var url = "https://savebills.com.ng".obs;
+  // var url = "https://savebills.com.ng".obs;
+  var url = "".obs;
   final key = UniqueKey();
 
   Future<bool> exitApp(BuildContext context) async {

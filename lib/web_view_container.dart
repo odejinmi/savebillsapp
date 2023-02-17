@@ -18,6 +18,7 @@ import 'bottomnavigation.dart';
 import 'constant.dart';
 import 'js_handler.dart';
 import 'no_internet.dart';
+import 'provider/adsProvider.dart';
 import 'provider/googleProvider.dart';
 
 class WebViewContainer extends StatefulWidget {
@@ -56,7 +57,7 @@ class WebViewContainerState extends State<WebViewContainer> {
     // initialSettings.allowingReadAccessTo = WebUri('file://$WEB_ARCHIVE_DIR/');
     return WillPopScope(
         onWillPop: () => pagecontroller.exitApp(context),
-        child: Obx(()=>Scaffold(
+        child: Scaffold(
           appBar: AppBar(toolbarHeight: 0),
           body: LoaderOverlay(
             useDefaultLoading: false,
@@ -73,7 +74,7 @@ class WebViewContainerState extends State<WebViewContainer> {
                 children: [
                   Expanded(
                     child: InAppWebView(
-                      key: pagecontroller.webViewKey,
+                      key: GlobalKey(),
                       initialSettings: initialSettings,
                       // contextMenu: contextMenu,
                       initialUrlRequest:
@@ -197,16 +198,14 @@ class WebViewContainerState extends State<WebViewContainer> {
                       },
                     ),
                   ),
-                  BannerAdmob()
                 ],
               ),
             ),
           ),
-          bottomNavigationBar: !pagecontroller.tabNavigationEnabled.value
-              ? null
-              : Bottomnavigation(
-                  selected: pagecontroller.selected.value,
-                ),
-        )));
+          bottomNavigationBar: Obx(()=> !pagecontroller.tabNavigationEnabled.value
+                ? const SizedBox.shrink()
+                : const Bottomnavigation(),
+          ),
+        ));
   }
 }

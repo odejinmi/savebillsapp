@@ -302,9 +302,6 @@ Future<void> startJS(webViewController) async {
   webViewController?.addJavaScriptHandler(
       handlerName: 'appSettings',
       callback: (args) {
-        showmessage("start appSettings");
-        showmessage(args);
-
         AppSettings.openAppSettings();
 
         return {"success": true};
@@ -314,16 +311,12 @@ Future<void> startJS(webViewController) async {
       handlerName: 'deviceInfo',
       callback: (args) async {
         var resp = await initPlatformState();
-        print(resp);
         return {"success": true, "data": resp};
       });
 
   webViewController?.addJavaScriptHandler(
       handlerName: 'share',
       callback: (args) {
-        showmessage("start sharing");
-        showmessage(args);
-
         Share.share(args[0], subject: 'Web2App');
 
         return {"success": true};
@@ -375,9 +368,6 @@ Future<void> startJS(webViewController) async {
   webViewController?.addJavaScriptHandler(
       handlerName: 'scanQrCode',
       callback: (args) async {
-        showmessage("start scanQrCode");
-        showmessage(args);
-
         PermissionStatus permission = await Permission.camera.status;
         if (permission != PermissionStatus.granted &&
             permission != PermissionStatus.permanentlyDenied) {
@@ -407,9 +397,6 @@ Future<void> startJS(webViewController) async {
   webViewController?.addJavaScriptHandler(
       handlerName: 'takePicture',
       callback: (args) async {
-        showmessage("start takePicture");
-        showmessage(args);
-
         PermissionStatus permission = await Permission.camera.status;
         if (permission != PermissionStatus.granted &&
             permission != PermissionStatus.permanentlyDenied) {
@@ -439,9 +426,6 @@ Future<void> startJS(webViewController) async {
   webViewController?.addJavaScriptHandler(
       handlerName: 'appReview',
       callback: (args) async {
-        showmessage("start appReview");
-        showmessage(args);
-
         _requestReview();
         return {"success": true, 'message': "App review requested"};
       });
@@ -449,8 +433,6 @@ Future<void> startJS(webViewController) async {
   webViewController?.addJavaScriptHandler(
       handlerName: 'geoLocation',
       callback: (args) async {
-        showmessage("start geoLocation");
-        showmessage(args);
 
         return _getCurrentPosition(1);
       });
@@ -458,8 +440,6 @@ Future<void> startJS(webViewController) async {
   webViewController?.addJavaScriptHandler(
       handlerName: 'geoAddress',
       callback: (args) async {
-        showmessage("start geoLocation");
-        showmessage(args);
 
         return _getCurrentPosition(2);
       });
@@ -467,18 +447,15 @@ Future<void> startJS(webViewController) async {
   webViewController?.addJavaScriptHandler(
       handlerName: 'vibrate',
       callback: (args) async {
-        showmessage("start vibrate");
-        showmessage(args);
 
         Vibration.vibrate(duration: args[0]);
 
         return {"success": true, 'message': "Vibration started"};
       });
+
   webViewController?.addJavaScriptHandler(
       handlerName: 'islogin',
       callback: (args) async {
-        showmessage("app has login");
-        showmessage(args);
         Get.find<Pagecontroller>().tabNavigationEnabled.value = true;
         return {"success": true, 'message': "Devise has login"};
       });
@@ -486,8 +463,40 @@ Future<void> startJS(webViewController) async {
   webViewController?.addJavaScriptHandler(
       handlerName: 'showinterstitial',
       callback: (args) async {
-        showmessage("advert is showing");
         Get.find<AdsProvider>().showads();
+        return {"success": true, 'message': "Devise has login"};
+      });
+
+ webViewController?.addJavaScriptHandler(
+      handlerName: 'showbanner',
+      callback: (args) async {
+        if(Get.find<AdsProvider>().isadvertready()) {
+          Get.dialog(
+              AlertDialog(
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Spacer(),
+                        IconButton(onPressed: () {
+                          Get.find<AdsProvider>().removebanner();
+                          Get.back();
+                        }, icon: const Icon(Icons.close))
+                      ],
+                    ),
+                    const SizedBox(height: 20,),
+                    Get.find<AdsProvider>().banner(),
+                  ],
+                ),
+                backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0)),
+              )
+          );
+        }
         return {"success": true, 'message': "Devise has login"};
       });
 

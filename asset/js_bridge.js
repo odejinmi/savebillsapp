@@ -146,7 +146,43 @@ web2app={
                           myCallback(result);
                        });
         }
-    }
+    },
+    islogin: function (myCallback){
+          console.log("I am inside the bridge");
+           window.flutter_inappwebview.callHandler('islogin').then(
+             (result) => {
+                  console.log("inside js bridge callback");
+                  console.log(JSON.stringify(result));
+                  myCallback(result);
+               });
+    },
+    showinterstitial: function (myCallback){
+          console.log("I am inside the bridge");
+           window.flutter_inappwebview.callHandler('showinterstitial').then(
+             (result) => {
+                  console.log("inside js bridge callback");
+                  console.log(JSON.stringify(result));
+                  myCallback(result);
+               });
+    },
+    copy: function (myCallback){
+          console.log("I am inside the bridge");
+           window.flutter_inappwebview.callHandler('copy').then(
+             (result) => {
+                  console.log("inside js bridge callback");
+                  console.log(JSON.stringify(result));
+                  myCallback(result);
+               });
+    },
+    showbanner: function (myCallback){
+          console.log("I am inside the bridge");
+           window.flutter_inappwebview.callHandler('showbanner').then(
+             (result) => {
+                  console.log("inside js bridge callback");
+                  console.log(JSON.stringify(result));
+                  myCallback(result);
+               });
+    },
 }
 
 

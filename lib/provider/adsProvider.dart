@@ -45,6 +45,8 @@ class AdsProvider extends GetxController {
       unityplayed.value = false;
       googleplayed.value = true;
     } else {
+      googleadvert.createInterstitialAd();
+      unity.loadAds();
       adcolonyplayed.value = false;
       unityplayed.value = false;
       googleplayed.value = false;
@@ -82,8 +84,13 @@ class AdsProvider extends GetxController {
     }
   }
 
+  bool isadvertready()=>googleadvert.bannerReady.value;
+  void removebanner(){
+    googleadvert.removeBanner();
+  }
+
   Widget banner() {
-    // return adcolony.banner();
+    return googleadvert.adWidget();
     switch (slideIndex.value) {
       case 0:
         return unity.adWidget();

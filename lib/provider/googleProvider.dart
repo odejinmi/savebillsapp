@@ -15,7 +15,7 @@ class GoogleProvider extends GetxController {
   int _numRewardedLoadAttempts = 0;
   int maxFailedLoadAttempts = 3;
 
-  bool showAds = false;
+  var bannerReady = false.obs;
   bool _footerBannerShow = false;
   dynamic _bannerAd;
 
@@ -47,11 +47,12 @@ class GoogleProvider extends GetxController {
   void createInterstitialAd() {
     InterstitialAd.load(
         adUnitId: screenUnitId,
-        request: AdRequest(),
+        request: const AdRequest(),
         adLoadCallback: InterstitialAdLoadCallback(
           onAdLoaded: (InterstitialAd ad) {
             // Keep a reference to the ad so you can show it later.
             intersAd1 = ad;
+            update();
           },
           onAdFailedToLoad: (LoadAdError error) {
             // googleinstatialfailed = true;
@@ -73,6 +74,7 @@ class GoogleProvider extends GetxController {
     //
     createInterstitialAd();
     _createRewardedAd();
+    loadbanner();
     // adsProvider.intersAd2?.load();
     // adsProvider.intersAd3?.load();
   }
@@ -85,15 +87,18 @@ class GoogleProvider extends GetxController {
   }
 
   void showAd1() async {
-    if (!showAds) return;
     if (intersAd1 != null) {
       intersAd1?.fullScreenContentCallback = FullScreenContentCallback(
         onAdShowedFullScreenContent: (InterstitialAd ad) {},
         onAdDismissedFullScreenContent: (InterstitialAd ad) {
+          intersAd1 = null;
+          update();
           ad.dispose();
           createInterstitialAd();
         },
         onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
+          intersAd1 = null;
+          update();
           ad.dispose();
           createInterstitialAd();
         },
@@ -127,7 +132,7 @@ class GoogleProvider extends GetxController {
     }
   }
 
-  static final AdRequest request = AdRequest(
+  static const AdRequest request = AdRequest(
     keywords: <String>['foo', 'bar'],
     contentUrl: 'http://foo.com/bar.html',
     nonPersonalizedAds: true,
@@ -137,7 +142,7 @@ class GoogleProvider extends GetxController {
     RewardedAd.load(
         adUnitId: videoUnitId,
         // request: request,
-        request: AdRequest(),
+        request: const AdRequest(),
         rewardedAdLoadCallback: RewardedAdLoadCallback(
           onAdLoaded: (RewardedAd ad) {
             rewardedAd = ad;
@@ -183,21 +188,42 @@ class GoogleProvider extends GetxController {
     rewardedAd = null;
   }
 
-  // Widget adWidget(BuildContext context,
-  //     {String? bannerId, BannerSize? adSize}) {
-  //   if (!showAds) return SizedBox.shrink();
-  //   VpnProvider vpnProvider = VpnProvider.instance(context);
-  //   if (vpnProvider.isPro) {
-  //     return SizedBox.shrink();
-  //   } else {
-  //     // return SizedBox.shrink();
-  //     return BannerAd(
-  //       unitId: bannerId ?? banner1,
-  //       size: adSize ?? BannerSize.ADAPTIVE,
-  //     );
-  //     // return BannerAd(adUnitId: bannerId ?? banner1, adSize: adsize);
-  //   }
-  // }
+  void loadbanner(){
+    _bannerAd = BannerAd(
+      adUnitId: Platform.isAndroid
+      // test
+      // ? 'ca-app-pub-3940256099942544/6300978111'
+          ? 'ca-app-pub-1598206053668309/7104910929'
+      // : 'ca-app-pub-3940256099942544/2934735716';
+          : 'ca-app-pub-1598206053668309/3771336427',
+      request: const AdRequest(),
+      size: AdSize.largeBanner,
+      listener: BannerAdListener(
+        onAdLoaded: (_) {
+            bannerReady.value = true;
+        },
+        onAdFailedToLoad: (ad, err) {
+            bannerReady.value = false;
+          ad.dispose();
+        },
+        onAdOpened: (ad){
+          loadbanner();
+        },
+      ),
+    );
+    _bannerAd.load();
+  }
+
+  Widget adWidget() {
+      // return SizedBox.shrink();
+      return _bannerAd == null?const SizedBox.shrink(): Container(
+        alignment: Alignment.center,
+        width: Get.width,
+        height: _bannerAd.size.height.toDouble(),
+        child: AdWidget(ad: _bannerAd),
+      );
+      // return BannerAd(adUnitId: bannerId ?? banner1, adSize: adsize);
+  }
 
   // Widget adbottomSpace() {
   //   if (!showAds) return SizedBox.shrink();
@@ -208,10 +234,10 @@ class GoogleProvider extends GetxController {
   // }
 
   void removeBanner() {
-    if (!showAds) return;
     footBannerShow = false;
     _bannerAd.dispose();
     _bannerAd = null;
+    loadbanner();
   }
 
   // static AdsProvider instance(BuildContext context) =>

@@ -36,14 +36,14 @@ class UnityProvider extends GetxController {
       testMode: false,
       onComplete: () {
         print('Initialization Complete');
-        _loadAds();
+        loadAds();
       },
       onFailed: (error, message) =>
           print('Initialization Failed: $error $message'),
     );
   }
 
-  void _loadAds() {
+  void loadAds() {
     for (var placementId in placements.keys) {
       _loadAd(placementId);
     }
