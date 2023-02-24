@@ -246,26 +246,26 @@ class GoogleProvider extends GetxController {
   static String get appId => Platform.isAndroid
       // old
       // ? 'ca-app-pub-6117361441866120~5829948546'
-      ? 'ca-app-pub-1598206053668309~2044155939'
+      ? 'ca-app-pub-1598206053668309~3978884246'
       // : 'ca-app-pub-3940256099942544~1458002511';
       : 'ca-app-pub-1598206053668309~7710581439';
 
   static String get bannerUnitId => Platform.isAndroid
       // test
       // ? 'ca-app-pub-3940256099942544/6300978111'
-      ? 'ca-app-pub-1598206053668309/7104910929'
+      ? 'ca-app-pub-1598206053668309/9458441638'
       // : 'ca-app-pub-3940256099942544/2934735716';
       : 'ca-app-pub-1598206053668309/3771336427';
 
   static String get screenUnitId => Platform.isAndroid
       // test
       // ? 'ca-app-pub-3940256099942544/1033173712'
-      ? 'ca-app-pub-1598206053668309/2841398135'
+      ? 'ca-app-pub-1598206053668309/3372379580'
       // : 'ca-app-pub-3940256099942544/4411468910';
       : 'ca-app-pub-1598206053668309/3579764737';
 
   static String get videoUnitId => Platform.isAndroid
       // ? 'ca-app-pub-3940256099942544/5224354917'
-      ? 'ca-app-pub-1598206053668309/5275989781'
+      ? 'ca-app-pub-1598206053668309/7120052904'
       : 'ca-app-pub-1598206053668309/3667378733';
 }

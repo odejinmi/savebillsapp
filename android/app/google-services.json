@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "961018403699",
+    "project_id": "savebills-3eef7",
+    "storage_bucket": "savebills-3eef7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:961018403699:android:bd8b20cf1f887812354306",
+        "android_client_info": {
+          "package_name": "com.a5starcompany.savebills"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "961018403699-mipsla6hm9ve9r4qbdqmpj718i4elviq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCiZ2-GYawdNusv2lVVNkImVYHDlCPFxqU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "961018403699-mipsla6hm9ve9r4qbdqmpj718i4elviq.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "961018403699-drh1roa17rrd8fitt09ataee6hbi47m2.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.a5starcompany.savebills"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:savebills/pagecontroller.dart';
 import 'package:savebills/provider/adsProvider.dart';
 import 'package:savebills/provider/googleProvider.dart';
@@ -15,11 +17,8 @@ import 'package:app_settings/app_settings.dart';
 // import 'package:contacts_service/contacts_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
-import 'package:barcode_scan2/barcode_scan2.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:image_cropper/image_cropper.dart';
 import 'package:in_app_review/in_app_review.dart';
-import 'package:vibration/vibration.dart';
+import 'package:http/http.dart' as http;
 
 import 'constant.dart';
 import 'deviceinfo.dart';
@@ -92,34 +91,6 @@ void _cancelAuthentication() async {
   await auth.stopAuthentication();
 }
 
-Future scan() async {
-  try {
-    var barcode = await BarcodeScanner.scan();
-    var barcoded = barcode.rawContent;
-    print(barcode.type); // The result type (barcode, cancelled, failed)
-    print(barcode.rawContent); // The barcode content
-    print(barcode.format); // The barcode format (as enum)
-    print(barcode
-        .formatNote); // If a unknown format was scanned this field contains a note
-
-    if (barcode.rawContent.isNotEmpty) {
-      return {"success": true, "data": barcoded};
-    } else {
-      return {"success": false, "message": "Barcode not found"};
-    }
-  } on PlatformException catch (e) {
-    return {"success": false, "message": 'Unknown error: $e'};
-  } on FormatException {
-    return {
-      "success": false,
-      "message":
-          'User returned using the "back"-button before scanning anything. Result'
-    };
-  } catch (e) {
-    return {"success": false, "message": "Unknown error: $e"};
-  }
-}
-
 Future<Map<String, Object>> selectContact() async {
   final FlutterContactPicker _contactPicker = new FlutterContactPicker();
   Contact? contact = await _contactPicker.selectContact();
@@ -133,56 +104,6 @@ Future<Map<String, Object>> selectContact() async {
       .replaceAll("234", "0");
 
   return {"success": true, 'data': rc};
-}
-
-Future<Map<String, Object>> takePicture() async {
-  final picker = ImagePicker();
-  final image =
-      await picker.pickImage(source: ImageSource.camera, imageQuality: 20);
-  return cropImage(image?.path);
-}
-
-/// Crop Image
-cropImage(filePath) async {
-  var croppedFile = await ImageCropper().cropImage(
-    sourcePath: filePath,
-    aspectRatioPresets: Platform.isAndroid
-        ? [
-            CropAspectRatioPreset.square,
-            CropAspectRatioPreset.ratio3x2,
-            CropAspectRatioPreset.original,
-            CropAspectRatioPreset.ratio4x3,
-            CropAspectRatioPreset.ratio16x9
-          ]
-        : [
-            CropAspectRatioPreset.original,
-            CropAspectRatioPreset.square,
-            CropAspectRatioPreset.ratio3x2,
-            CropAspectRatioPreset.ratio4x3,
-            CropAspectRatioPreset.ratio5x3,
-            CropAspectRatioPreset.ratio5x4,
-            CropAspectRatioPreset.ratio7x5,
-            CropAspectRatioPreset.ratio16x9
-          ],
-      uiSettings: [
-        AndroidUiSettings(
-          toolbarTitle: 'Crop Image',
-          toolbarColor: primarycolor,
-          toolbarWidgetColor: Colors.white,
-          initAspectRatio: CropAspectRatioPreset.original,
-          lockAspectRatio: false),
-        IOSUiSettings(
-        title: 'Crop Image',)
-      ]
-  );
-  if (croppedFile != null) {
-    File image = File(croppedFile.path);
-    final bytes = image.readAsBytesSync();
-    String img64 = base64Encode(bytes);
-
-    return {"success": true, 'data': img64};
-  }
-  return {"success": false, 'message': 'No image for return'};
 }
 
 Future<bool> _handleLocationPermission() async {
@@ -233,6 +154,65 @@ Future<Map<String, Object>> _getAddressFromLatLng(Position position) async {
   Placemark place = placemarks[0];
 
   return {"success": true, 'data': place};
+}
+
+Future<void> _handleSignIn() async {
+  try {
+    await googleSignIn.signIn();
+  } catch (error) {
+    print(error);
+  }
+}
+
+Future<void> handleGetContact(GoogleSignInAccount user) async {
+  // setState(() {
+  Get.find<Pagecontroller>().contactText.value = 'Loading contact info...';
+  // });
+  final http.Response response = await http.get(
+    Uri.parse('https://people.googleapis.com/v1/people/me/connections'
+        '?requestMask.includeField=person.names'),
+    headers: await user.authHeaders,
+  );
+  if (response.statusCode != 200) {
+    // setState(() {
+    Get.find<Pagecontroller>().contactText.value = 'People API gave a ${response.statusCode} '
+        'response. Check logs for details.';
+    // });
+    print('People API ${response.statusCode} response: ${response.body}');
+    return;
+  }
+  final Map<String, dynamic> data =
+  json.decode(response.body) as Map<String, dynamic>;
+  print("google data");
+  print(data);
+  final String? namedContact = _pickFirstNamedContact(data);
+  // setState(() {
+  if (namedContact != null) {
+    Get.find<Pagecontroller>().contactText.value = 'I see you know $namedContact!';
+  } else {
+    Get.find<Pagecontroller>().contactText.value = 'No contacts to display.';
+  }
+  // });
+}
+
+String? _pickFirstNamedContact(Map<String, dynamic> data) {
+  final List<dynamic>? connections = data['connections'] as List<dynamic>?;
+  final Map<String, dynamic>? contact = connections?.firstWhere(
+        (dynamic contact) => (contact as Map<Object?, dynamic>)['names'] != null,
+    orElse: () => null,
+  ) as Map<String, dynamic>?;
+  if (contact != null) {
+    final List<dynamic> names = contact['names'] as List<dynamic>;
+    final Map<String, dynamic>? name = names.firstWhere(
+          (dynamic name) =>
+      (name as Map<Object?, dynamic>)['displayName'] != null,
+      orElse: () => null,
+    ) as Map<String, dynamic>?;
+    if (name != null) {
+      return name['displayName'] as String?;
+    }
+  }
+  return null;
 }
 
 Future<void> startJS(webViewController) async {
@@ -366,64 +346,6 @@ Future<void> startJS(webViewController) async {
       });
 
   webViewController?.addJavaScriptHandler(
-      handlerName: 'scanQrCode',
-      callback: (args) async {
-        PermissionStatus permission = await Permission.camera.status;
-        if (permission != PermissionStatus.granted &&
-            permission != PermissionStatus.permanentlyDenied) {
-          PermissionStatus permissionStatus =
-          await Permission.camera.request();
-          await Permission.storage.request();
-
-          if (permissionStatus == PermissionStatus.granted) {
-            print("Permission granted");
-            return scan();
-          } else {
-            print("Permission not granted");
-            return {"success": false, 'message': "Permission not granted"};
-          }
-        } else {
-          PermissionStatus permissionStatus = await Permission.camera.request();
-          if (permissionStatus == PermissionStatus.granted) {
-            print("Permission granted");
-            return scan();
-          } else {
-            print("Permission not granted");
-            return {"success": false, 'message': "Permission not granted"};
-          }
-        }
-      });
-
-  webViewController?.addJavaScriptHandler(
-      handlerName: 'takePicture',
-      callback: (args) async {
-        PermissionStatus permission = await Permission.camera.status;
-        if (permission != PermissionStatus.granted &&
-            permission != PermissionStatus.permanentlyDenied) {
-          PermissionStatus permissionStatus =
-              await Permission.camera.request();
-              await Permission.storage.request();
-
-          if (permissionStatus == PermissionStatus.granted) {
-            print("Permission granted");
-            return takePicture();
-          } else {
-            print("Permission not granted");
-            return {"success": false, 'message': "Permission not granted"};
-          }
-        } else {
-          PermissionStatus permissionStatus = await Permission.camera.request();
-          if (permissionStatus == PermissionStatus.granted) {
-            print("Permission granted");
-            return takePicture();
-          } else {
-            print("Permission not granted");
-            return {"success": false, 'message': "Permission not granted"};
-          }
-        }
-      });
-
-  webViewController?.addJavaScriptHandler(
       handlerName: 'appReview',
       callback: (args) async {
         _requestReview();
@@ -445,19 +367,17 @@ Future<void> startJS(webViewController) async {
       });
 
   webViewController?.addJavaScriptHandler(
-      handlerName: 'vibrate',
-      callback: (args) async {
-
-        Vibration.vibrate(duration: args[0]);
-
-        return {"success": true, 'message': "Vibration started"};
-      });
-
-  webViewController?.addJavaScriptHandler(
       handlerName: 'islogin',
       callback: (args) async {
         Get.find<Pagecontroller>().tabNavigationEnabled.value = true;
         return {"success": true, 'message': "Devise has login"};
+      });
+
+  webViewController?.addJavaScriptHandler(
+      handlerName: 'islogout',
+      callback: (args) async {
+        Get.find<Pagecontroller>().tabNavigationEnabled.value = false;
+        return {"success": true, 'message': "Devise has logout"};
       });
 
   webViewController?.addJavaScriptHandler(
@@ -507,6 +427,43 @@ Future<void> startJS(webViewController) async {
         return {"success": true, 'message': "Devise has copy"};
       });
 
+ webViewController?.addJavaScriptHandler(
+      handlerName: 'googlesignin',
+      callback: (args) async {
+        _handleSignIn();
+      });
+
+ webViewController?.addJavaScriptHandler(
+      handlerName: 'googlesignout',
+      callback: (args) async {
+        googleSignIn.disconnect();
+      });
+
+  webViewController?.addJavaScriptHandler(
+      handlerName: 'googledetails',
+      callback: (args) async {
+        handleGetContact(Get.find<Pagecontroller>().currentUser!);
+      });
+
+  webViewController?.addJavaScriptHandler(
+      handlerName: 'subscribePushNotification',
+      callback: (args) async {
+        print("start subscribePushNotification");
+        print(args);
+
+        await FirebaseMessaging.instance.subscribeToTopic(args[0].toString());
+        return {"success": true, 'message': "Subscribed successfully"};
+      });
+
+  webViewController?.addJavaScriptHandler(
+      handlerName: 'unsubscribePushNotification',
+      callback: (args) async {
+        print("start unsubscribePushNotification");
+        print(args);
+
+        await FirebaseMessaging.instance.unsubscribeFromTopic(args[0].toString());
+        return {"success": true, 'message': "unSubscribed successfully"};
+      });
 }
 
 showmessage(message){
