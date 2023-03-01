@@ -209,19 +209,9 @@ web2app={
         }
     },
     googlesignin:{
-        signin: function (params){
+        signin: function (myCallback){
             console.log("I am inside the bridge");
-            console.log(params);
-            window.flutter_inappwebview.callHandler('googlesignin').then(
-                (result) => {
-                     console.log("inside js bridge callback");
-                     console.log(JSON.stringify(result));
-                     myCallback(result);
-                  });
-        },
-        islogin: function (params){
-            console.log("I am inside the bridge");
-            console.log(params);
+            console.log(myCallback);
             window.flutter_inappwebview.callHandler('googlesignin').then(
                 (result) => {
                      console.log("inside js bridge callback");
@@ -234,7 +224,22 @@ web2app={
             console.log(params);
             return window.flutter_inappwebview.callHandler('googlesignout');
         }
-    }
+    },
+    githubsignin: function (myCallback){
+                console.log("I am inside the bridge");
+                console.log(myCallback);
+                window.flutter_inappwebview.callHandler('githubsignin').then(
+                    (result) => {
+                         console.log("inside js bridge callback");
+                         console.log(JSON.stringify(result));
+                         myCallback(result);
+                      });
+            },
+    spinandwin: function (params){
+                console.log("I am inside the bridge");
+                console.log(params);
+                return window.flutter_inappwebview.callHandler('spinandwin',params);
+            },
 }
 
 

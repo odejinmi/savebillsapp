@@ -25,9 +25,9 @@ class _BannerAdmobState extends State<BannerAdmob> {
       adUnitId: Platform.isAndroid
       // test
       // ? 'ca-app-pub-3940256099942544/6300978111'
-      ? 'ca-app-pub-1598206053668309/9458441638'
+      ? 'ca-app-pub-6117361441866120/3708316699'
       // : 'ca-app-pub-3940256099942544/2934735716';
-      : 'ca-app-pub-1598206053668309/3771336427',
+      : 'ca-app-pub-6117361441866120/4722833700',
       request: const AdRequest(),
       size: AdSize.largeBanner,
       listener: BannerAdListener(

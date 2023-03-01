@@ -170,6 +170,9 @@ class GoogleProvider extends GetxController {
         print('$ad onAdDismissedFullScreenContent.');
         ad.dispose();
         _createRewardedAd();
+        if (rewarded != null) {
+          rewarded();
+        }
       },
       onAdFailedToShowFullScreenContent: (RewardedAd ad, AdError error) {
         print('$ad onAdFailedToShowFullScreenContent: $error');
@@ -181,9 +184,7 @@ class GoogleProvider extends GetxController {
     rewardedAd!.setImmersiveMode(true);
     rewardedAd!.show(onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
       print('$ad with reward $RewardItem(${reward.amount}, ${reward.type})');
-      if (rewarded != null) {
-        rewarded();
-      }
+
     });
     rewardedAd = null;
   }
@@ -253,19 +254,26 @@ class GoogleProvider extends GetxController {
   static String get bannerUnitId => Platform.isAndroid
       // test
       // ? 'ca-app-pub-3940256099942544/6300978111'
-      ? 'ca-app-pub-1598206053668309/9458441638'
+      ? 'ca-app-pub-6117361441866120/3708316699'
       // : 'ca-app-pub-3940256099942544/2934735716';
-      : 'ca-app-pub-1598206053668309/3771336427';
+      : 'ca-app-pub-6117361441866120/4722833700';
 
   static String get screenUnitId => Platform.isAndroid
       // test
       // ? 'ca-app-pub-3940256099942544/1033173712'
-      ? 'ca-app-pub-1598206053668309/3372379580'
+      ? 'ca-app-pub-6117361441866120/9958299774'
       // : 'ca-app-pub-3940256099942544/4411468910';
-      : 'ca-app-pub-1598206053668309/3579764737';
+      : 'ca-app-pub-6117361441866120/7903546727';
+
+  static String get screenrewardUnitId => Platform.isAndroid
+      // test
+      // ? 'ca-app-pub-3940256099942544/1033173712'
+      ? 'ca-app-pub-6117361441866120/1070545062'
+      // : 'ca-app-pub-3940256099942544/4411468910';
+      : 'ca-app-pub-6117361441866120/2351837141';
 
   static String get videoUnitId => Platform.isAndroid
       // ? 'ca-app-pub-3940256099942544/5224354917'
-      ? 'ca-app-pub-1598206053668309/7120052904'
-      : 'ca-app-pub-1598206053668309/3667378733';
+      ? 'ca-app-pub-6117361441866120/3501267280'
+      : 'ca-app-pub-6117361441866120/5652771996';
 }

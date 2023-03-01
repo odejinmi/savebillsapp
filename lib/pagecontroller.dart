@@ -7,6 +7,7 @@ import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:savebills/provider/adsProvider.dart';
 
 import 'constant.dart';
@@ -20,14 +21,17 @@ class Pagecontroller extends GetxController with WidgetsBindingObserver {
   void onInit() {
     // TODO: implement onInit
     super.onInit();
-    googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
-        currentUser = account;
-        update();
-      if (currentUser != null) {
-        handleGetContact(currentUser!);
-      }
-    });
-    googleSignIn.signInSilently();
+    if (Platform.isIOS || Platform.isAndroid) {
+      // Snackbar.initTts();
+      PackageInfo.fromPlatform().then((PackageInfo packageInfo) {
+        appName = packageInfo.appName;
+        packageName = packageInfo.packageName;
+        versionapp = packageInfo.version;
+        buildNumber = packageInfo.buildNumber;
+      });
+    } else {
+      versionapp = "6.4.3";
+    }
   }
 
 
@@ -131,8 +135,8 @@ var tabNavigationEnabled = false.obs;
     return Future.value(true);
   }
 
-  var url = "https://savebills.com.ng".obs;
-  // var url = "".obs;
+  // var url = "https://savebills.com.ng".obs;
+  var url = "".obs;
   final key = UniqueKey();
 
   Future<bool> exitApp(BuildContext context) async {
@@ -179,12 +183,3 @@ var tabNavigationEnabled = false.obs;
 }
 
 const edittextbodercolour = 0xFF1B5E20;
-
-GoogleSignIn googleSignIn = GoogleSignIn(
-  // Optional clientId
-  // clientId: '479882132969-9i9aqik3jfjd7qhci1nqf0bm2g71rm1u.apps.googleusercontent.com',
-  scopes: <String>[
-    'email',
-    'https://www.googleapis.com/auth/contacts.readonly',
-  ],
-);

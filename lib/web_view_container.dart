@@ -7,6 +7,7 @@ import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
+import 'package:github_sign_in/github_sign_in.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -16,6 +17,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'banner_admob.dart';
 import 'bottomnavigation.dart';
 import 'constant.dart';
+import 'functions/sociallogin.dart';
 import 'js_handler.dart';
 import 'no_internet.dart';
 import 'provider/adsProvider.dart';
@@ -206,6 +208,11 @@ class WebViewContainerState extends State<WebViewContainer> {
                 ? const SizedBox.shrink()
                 : const Bottomnavigation(),
           ),
+          // floatingActionButton: FloatingActionButton(onPressed: () async {
+          //   var answer = await signInWithGitHub();
+          //   print(answer.additionalUserInfo!.profile);
+          //
+          // },child: Icon(Icons.facebook),),
         ));
   }
 }
