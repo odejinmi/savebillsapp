@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:savebills/provider/adsProvider.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:savebills/provider/networkProvider.dart';
 
 import 'constant.dart';
 import 'landingpage.dart';
@@ -105,7 +106,7 @@ class MyApp extends StatelessWidget {
       home: Landingpage(),
       initialBinding: BindingsBuilder(() {
         Get.lazyPut(() => AdsProvider(), fenix: true);
-        // Get.lazyPut(() => ApiProvider(), fenix: true);
+        Get.lazyPut(() => NetworkProvider(), fenix: true);
         // Get.find<VpnProvider>().initialize();
       }),
     );

@@ -212,7 +212,7 @@ Future<void> startJS(webViewController) async {
       handlerName: 'googlesignin',
       callback: (args) async {
         // login();
-        var answer = await signInWithFacebook();
+        var answer = await signInWithGoogle();
         return {"success": true, 'message': "Signin successfully",
           "data": answer.additionalUserInfo!.profile};
       });
@@ -259,7 +259,7 @@ Future<void> startJS(webViewController) async {
         print("start spin and win");
         print(args);
 
-        Get.to(()=>Spinningwheel(token: args[0]??"1380001|5xfpeJUtI3FXLaOR43f32PI7Wjjz2HfYVRoEsUev"));
+        Get.to(()=>Spinningwheel(token: args[0]["token"]??"1380001|5xfpeJUtI3FXLaOR43f32PI7Wjjz2HfYVRoEsUev"));
       });
 }
 

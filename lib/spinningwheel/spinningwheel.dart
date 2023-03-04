@@ -42,7 +42,6 @@ class _SpinningwheelState extends State<Spinningwheel> {
   var spined = false.obs;
   var numberplayed = 0.obs;
 
-  String token ="";
   @override
   void initState() {
     // TODO: implement initState
@@ -52,18 +51,18 @@ class _SpinningwheelState extends State<Spinningwheel> {
   }
   var prefs = GetStorage();
   void handleRoll() {
-    print("prefs.read('numberplayed')");
-    print(prefs.read('numberplayed'));
-    if (gm_advt < 3) {
-      gm_advt += 1;
+    debugPrint("prefs.read('numberplayed')");
+    debugPrint(prefs.read('numberplayed'));
+    if (gm_advt.value < 3) {
+      gm_advt.value += 1;
       handleRoll1();
     } else {
-      gm_advt = 0;
+      gm_advt.value = 0;
       if (prefs.read('numberplayed')== 5) {
         CustomAlertDialogloader(
-            title: "opps".tr,
-            message: "kindly_try_again".tr,
-            negativeBtnText: 'continue'.tr);
+            title: "Opps",
+            message: "Kindly try again",
+            negativeBtnText: 'Continue');
       }else {
         selected.add(
           roll(items.length),
@@ -78,7 +77,7 @@ class _SpinningwheelState extends State<Spinningwheel> {
 
   }
 
-  static int gm_advt = 0;
+  var gm_advt = 0.obs;
   void handleRoll1() {
     if (spined.isTrue) {
       spined.value = false;
@@ -95,7 +94,7 @@ class _SpinningwheelState extends State<Spinningwheel> {
                 height: 5,
               ),
               Text(
-                "${"recipient".tr} *",
+                "Recipient *",
                 style: TextStyle(color: primarycolour.value, fontSize: 16),
               ),
               const SizedBox(
@@ -199,12 +198,12 @@ class _SpinningwheelState extends State<Spinningwheel> {
                         onPressed: () async {
                           Get.back();
                           if (_formKey.currentState!.validate()) {
-                            CustomAlertDialogWidgetloader(widget: CircularProgressIndicator());
+                            CustomAlertDialogWidgetloader(widget: const SizedBox(height: 40,child: CircularProgressIndicator(value: 20,)));
                             var body = {
                               "id": items[selectedIndex].id.toString(),
                               "number": recipientController.text};
                             var response = await apicontroller.posttokendetail(
-                                "${apicontroller.utilityurl.value}spinwin-continue",body,token);
+                                "${apicontroller.utilityurl.value}spinwin-continue",body,widget.token);
                             Get.back();
                             apicontroller.loginprogress(response, success: (v) async {
                               CustomAlertDialogloader(
@@ -229,10 +228,10 @@ class _SpinningwheelState extends State<Spinningwheel> {
         );
       } else {
         CustomAlertDialogloader(
-          title: "you_are_not_lucky".tr,
+          title: "You are not lucky",
           message:
-          "try_again".tr,
-          negativeBtnText: 'ok'.tr,
+          "Try again",
+          negativeBtnText: 'ok',
         );
       }
     }  else {
@@ -253,7 +252,6 @@ class _SpinningwheelState extends State<Spinningwheel> {
       ),
       body: Column(
         children: [
-          
           Container(
             margin: const EdgeInsets.all(25),
               child: const Text("Welcome to SPIN & WIN. \n\nYou only have 5 chances every 5 Hours. For every chances there is 3 advert video then you will be able to claim reward if your spin pointer rest on a gift.",
@@ -261,7 +259,7 @@ class _SpinningwheelState extends State<Spinningwheel> {
               )),
           Expanded(
             child: Obx(() {
-              return items.isEmpty? CircularProgressIndicator():FortuneWheel(
+              return items.isEmpty? const SizedBox(height: 40, child: CircularProgressIndicator( value: 30,)):FortuneWheel(
                 animateFirst: false,
                 selected: selected.stream,
                 indicators: const <FortuneIndicator>[
@@ -286,16 +284,17 @@ class _SpinningwheelState extends State<Spinningwheel> {
           Obx(()=> items.isEmpty? const SizedBox.shrink(): spined.isFalse? RollButtonWithPreview(
               isAnimating: isAnimating.value,
               selected: selectedIndex,
-              items: items.value,
+              items: items,
               onPressed: isAnimating.value ? null : handleRoll1,
             ):ElevatedButton(
                 onPressed: handleRoll1,
-                child: Text('claim_reward'.tr),
+                child: const Text('claim reward'),
               ),
           ),
           const SizedBox(height: 30),
           Platform.isAndroid||Platform.isIOS && Get.find<NetworkProvider>().isonline.isTrue
-              ? Obx(() => Get.find<AdsProvider>().banner())
+              // ? Obx(() => Get.find<AdsProvider>().banner())
+              ?  Get.find<AdsProvider>().banner()
               : const SizedBox.shrink(),
         ],
       ),
@@ -307,7 +306,7 @@ class _SpinningwheelState extends State<Spinningwheel> {
   Future<void> FetchDetails() async {
     // loader();
     var response = await apicontroller.gettokendetail(
-        "${apicontroller.utilityurl.value}spinwin-fetch",token);
+        "${apicontroller.utilityurl.value}spinwin-fetch",widget.token);
     // Get.back();
     apicontroller.loginprogress(response, success: (v) async {
       items.value = spinningmodelFromJson(jsonEncode(v["data"]));

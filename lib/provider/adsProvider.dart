@@ -90,7 +90,8 @@ class AdsProvider extends GetxController {
   }
 
   Widget banner() {
-    return googleadvert.adWidget();
+    // return googleadvert.adWidget();
+    return BannerAdmob();
     switch (slideIndex.value) {
       case 0:
         return unity.adWidget();
